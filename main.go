@@ -1,6 +1,8 @@
 package main
 
 import (
+	"html/template"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -23,10 +25,10 @@ func main() {
 
 	// Set up observance (logging).
 	obsConfig := toolkit.ObsConfig{
-		AppName:              os.Getenv("APP_NAME"),
-		LogLevel:             os.Getenv("LOG_LEVEL"),
+		AppName:  os.Getenv("APP_NAME"),
+		LogLevel: os.Getenv("LOG_LEVEL"),
 		// SentryURL:            os.Getenv("SENTRY_URL"),
-		Version:              os.Getenv("APP_VERSION"),
+		Version: os.Getenv("APP_VERSION"),
 		// MetricsURL:           os.Getenv("METRICS_URL"),
 		MetricsFlushInterval: 1 * time.Second,
 		LoggedHeaders: map[string]string{
@@ -64,7 +66,11 @@ func main() {
 
 	// Set up the server.
 	e, connectionsClosed := toolkit.MustNewServer(obs, "*")
-
+	e.Static("/assets", "assets")
+	renderer := &TemplateRenderer{
+		templates: template.Must(template.ParseGlob("resources/templates/*.html")),
+	}
+	e.Renderer = renderer
 	// Set up a routes and handlers.
 	e.POST("/users", func(c echo.Context) error {
 		obs.Logger.Info("incoming request to create new user")
@@ -89,13 +95,12 @@ func main() {
 
 		return c.NoContent(http.StatusCreated)
 	})
-	// Set up a routes and handlers.
+	// Named route "foobar"
 	e.GET("/", func(c echo.Context) error {
-		obs.Logger.Info("incoming request to to list al; users")
-		users := &[]User{}
-		db.Find(&users)
-		return c.JSON(http.StatusOK, users)
-	})
+		return c.Render(http.StatusOK, "index.html", map[string]interface{}{
+			"name": "Dolly!",
+		})
+	}).Name = "foobar"
 
 	// Start the server.
 	port := os.Getenv("PORT")
@@ -106,4 +111,20 @@ func main() {
 	}
 
 	<-connectionsClosed // Wait for the graceful shutdown to finish.
+}
+
+// TemplateRenderer is a custom html/template renderer for Echo framework
+type TemplateRenderer struct {
+	templates *template.Template
+}
+
+// Render renders a template document
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+
+	// Add global methods if data is a map
+	if viewContext, isMap := data.(map[string]interface{}); isMap {
+		viewContext["reverse"] = c.Echo().Reverse
+	}
+
+	return t.templates.ExecuteTemplate(w, name, data)
 }

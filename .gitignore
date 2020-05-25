@@ -13,3 +13,4 @@
 # External dependencies
 vendor
 .idea
+/node_modules/

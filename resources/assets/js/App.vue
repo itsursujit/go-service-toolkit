@@ -1,9 +1,9 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" :src="url('~@/assets/images/logo.png')">
+    <img alt="Vue logo" src="assets/images/logo.png">
     <HelloWorld msg="Welcome to Your Vue.js App"/>
   </div>
-</template>
+</template>s
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
@@ -15,8 +15,6 @@ export default {
   }
 }
 </script>
-
-<style src="url('~@/assets/css/logo.png')"></style>
 
 <style>
 #app {
