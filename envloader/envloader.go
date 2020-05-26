@@ -15,7 +15,7 @@ var StageEnv = "ENV"
 var DefaultStageValue = "prod"
 
 // DefaultEnvFile determines what file contains the the default env values
-var DefaultEnvFile = "prod.env"
+var DefaultEnvFile = ".env"
 
 // LoadEnvs checks if all envs are set and loads envs from the .env files into process envs
 // If envs are missing an error is returned that contains the names of all missing envs
@@ -25,7 +25,7 @@ func LoadEnvs(folderPath string) error {
 		stage = DefaultStageValue
 	}
 
-	customConfigPath := path.Join(folderPath, stage+".env")
+	customConfigPath := path.Join(folderPath, ".env")
 	defaultConfigPath := path.Join(folderPath, DefaultEnvFile)
 
 	missingEnvs := []string{}

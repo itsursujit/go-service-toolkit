@@ -21,7 +21,7 @@ type Users []User
 
 func main() {
 	// Load environment variables.
-	toolkit.MustLoadEnvs("config")
+	toolkit.MustLoadEnvs("")
 
 	// Set up observance (logging).
 	obsConfig := toolkit.ObsConfig{
