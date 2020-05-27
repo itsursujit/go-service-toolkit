@@ -32,5 +32,6 @@ require (
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	golang.org/x/sys v0.0.0-20200523222454-059865788121 // indirect
+	google.golang.org/protobuf v1.24.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )

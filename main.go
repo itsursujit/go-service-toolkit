@@ -101,6 +101,12 @@ func main() {
 			"name": "Dolly!",
 		})
 	}).Name = "foobar"
+	e.GET("/users", func(c echo.Context) error {
+		obs.Logger.Info("incoming request to to list al; users")
+		users := &[]User{}
+		db.Find(&users)
+		return c.JSON(http.StatusOK, users)
+	})
 
 	// Start the server.
 	port := os.Getenv("PORT")
