@@ -1,6 +1,7 @@
 package toolkit
 
 import (
+	"github.com/gofiber/fiber"
 	"toolkit/cache"
 	"toolkit/database"
 	"toolkit/envloader"
@@ -63,10 +64,19 @@ func MustEnsureDBMigrations(folderPath string, config DBConfig) {
 }
 
 // MustNewServer sets up a new Echo server.
-func MustNewServer(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo, chan struct{}) {
-	echoServer, connectionsClosed, err := server.New(obs, CORSOrigins, timeout...)
+func MustNewEchoServer(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo, chan struct{}) {
+	echoServer, connectionsClosed, err := server.NewEcho(obs, CORSOrigins, timeout...)
 	if err != nil {
 		panic(err)
 	}
 	return echoServer, connectionsClosed
+}
+
+// MustNewServer sets up a new Echo server.
+func MustNewFiberServer(obs *observance.Obs, CORSOrigins string, timeout ...string) (*fiber.App, chan struct{}) {
+	echoServer, err := server.NewFiber(obs, CORSOrigins, timeout...)
+	if err != nil {
+		panic(err)
+	}
+	return echoServer, nil
 }

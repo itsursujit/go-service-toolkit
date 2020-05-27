@@ -1,11 +1,15 @@
 package main
 
 import (
+	"github.com/gofiber/fiber"
+	"github.com/jinzhu/gorm"
 	"html/template"
 	"io"
 	"net/http"
 	"os"
 	"time"
+	"toolkit/cache"
+	"toolkit/observance"
 	"toolkit/toolkit"
 
 	"github.com/labstack/echo/v4"
@@ -65,7 +69,29 @@ func main() {
 	}()
 
 	// Set up the server.
-	e, connectionsClosed := toolkit.MustNewServer(obs, "*")
+	startEchoRoutes(obs, db, cache)
+	// startFiberRoutes(obs, db, cache)
+
+}
+
+// TemplateRenderer is a custom html/template renderer for Echo framework
+type TemplateRenderer struct {
+	templates *template.Template
+}
+
+// Render renders a template document
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+
+	// Add global methods if data is a map
+	if viewContext, isMap := data.(map[string]interface{}); isMap {
+		viewContext["reverse"] = c.Echo().Reverse
+	}
+
+	return t.templates.ExecuteTemplate(w, name, data)
+}
+
+func startEchoRoutes(obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
+	e, connectionsClosed := toolkit.MustNewEchoServer(obs, "*")
 	e.Static("/assets", "assets")
 	renderer := &TemplateRenderer{
 		templates: template.Must(template.ParseGlob("resources/templates/*.html")),
@@ -101,11 +127,18 @@ func main() {
 			"name": "Dolly!",
 		})
 	}).Name = "foobar"
+	e.GET("/users", func(c echo.Context) error {
+		obs.Logger.Info("incoming request to to list al; users")
+		users := &[]User{}
+		db.Find(&users)
+		return c.JSON(http.StatusOK, users)
+	})
 
 	// Start the server.
 	port := os.Getenv("PORT")
 	obs.Logger.WithField("port", port).Info("server running")
 	err := e.Start(":" + port)
+
 	if err != nil {
 		obs.Logger.Warn(err)
 	}
@@ -113,18 +146,41 @@ func main() {
 	<-connectionsClosed // Wait for the graceful shutdown to finish.
 }
 
-// TemplateRenderer is a custom html/template renderer for Echo framework
-type TemplateRenderer struct {
-	templates *template.Template
-}
+func startFiberRoutes(obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
+	e := fiber.New()
 
-// Render renders a template document
-func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	// Set up a routes and handlers.
+	e.Post("/users", func(c *fiber.Ctx) {
+		obs.Logger.Info("incoming request to create new user")
 
-	// Add global methods if data is a map
-	if viewContext, isMap := data.(map[string]interface{}); isMap {
-		viewContext["reverse"] = c.Echo().Reverse
-	}
+		newUser := &User{}
+		err := c.Locals("newUser", newUser)
+		if err != nil {
+			c.JSON(map[string]string{"msg": err.(string)})
+		}
 
-	return t.templates.ExecuteTemplate(w, name, data)
+		if err = db.Save(newUser).Error; err != nil {
+			c.JSON(map[string]string{"msg": err.(string)})
+		}
+
+		// Nonsense cache usage example
+		err = cache.SetJSON("latestNewUser", newUser, 0)
+		if err != nil {
+			c.JSON(map[string]string{"msg": err.(string)})
+		}
+
+		c.SendStatus(http.StatusCreated)
+	})
+	e.Get("/users", func(c *fiber.Ctx) {
+		obs.Logger.Info("incoming request to to list al; users")
+		users := &[]User{}
+		db.Find(&users)
+		c.JSON(users)
+		c.SendStatus(http.StatusOK)
+	})
+
+	// Start the server.
+	port := os.Getenv("PORT")
+	// obs.Logger.WithField("port", port).Info("server running")
+	e.Listen(":" + port)
 }

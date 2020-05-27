@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/gofiber/fiber"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,7 +23,7 @@ var defaultBinder = echo.DefaultBinder{}
 
 // New creates an echo server instance with the given logger, CORS middleware if CORSOrigins was supplied
 // and optionally a timeout setting that is applied for read and write.
-func New(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo, chan struct{}, error) {
+func NewEcho(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo, chan struct{}, error) {
 	timeoutDuration := defaultTimeout
 	if len(timeout) > 0 {
 		parsedTimeout, err := time.ParseDuration(timeout[0])
@@ -74,6 +75,13 @@ func New(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM)
 
 	return echoServer, connsClosed, nil
+}
+
+// New creates an echo server instance with the given logger, CORS middleware if CORSOrigins was supplied
+// and optionally a timeout setting that is applied for read and write.
+func NewFiber(obs *observance.Obs, CORSOrigins string, timeout ...string) (*fiber.App, error) {
+	srv := fiber.New()
+	return srv, nil
 }
 
 // HTTPErrorHandler retruns an error handler that can be used in echo to overwrite the default Echo error handler.
