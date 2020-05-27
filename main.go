@@ -69,85 +69,17 @@ func main() {
 	}()
 
 	// Set up the server.
-	startEchoRoutes(obs, db, cache)
-	// startFiberRoutes(obs, db, cache)
+	addr := ":" + os.Getenv("PORT")
+	startFiberRoutes(addr, obs, db, cache)
 
 }
 
-// TemplateRenderer is a custom html/template renderer for Echo framework
-type TemplateRenderer struct {
-	templates *template.Template
-}
-
-// Render renders a template document
-func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-
-	// Add global methods if data is a map
-	if viewContext, isMap := data.(map[string]interface{}); isMap {
-		viewContext["reverse"] = c.Echo().Reverse
-	}
-
-	return t.templates.ExecuteTemplate(w, name, data)
-}
-
-func startEchoRoutes(obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
-	e, connectionsClosed := toolkit.MustNewEchoServer(obs, "*")
-	e.Static("/assets", "assets")
-	renderer := &TemplateRenderer{
-		templates: template.Must(template.ParseGlob("resources/templates/*.html")),
-	}
-	e.Renderer = renderer
-	// Set up a routes and handlers.
-	e.POST("/users", func(c echo.Context) error {
-		obs.Logger.Info("incoming request to create new user")
-
-		newUser := &User{}
-		err := c.Bind(newUser)
-		if err != nil {
-			obs.Logger.WithError(err).Warn("invalid request")
-			return c.JSON(http.StatusBadRequest, map[string]string{"msg": err.Error()})
-		}
-
-		if err = db.Save(newUser).Error; err != nil {
-			obs.Logger.WithError(err).Error("failed to save user to DB")
-			return c.JSON(http.StatusInternalServerError, map[string]string{"msg": err.Error()})
-		}
-
-		// Nonsense cache usage example
-		err = cache.SetJSON("latestNewUser", newUser, 0)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"msg": err.Error()})
-		}
-
-		return c.NoContent(http.StatusCreated)
+func startFiberRoutes(addr string, obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
+	e := fiber.New(&fiber.Settings{
+		Prefork:       true,
+		CaseSensitive: true,
+		StrictRouting: true,
 	})
-	// Named route "foobar"
-	e.GET("/", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "index.html", map[string]interface{}{
-			"name": "Dolly!",
-		})
-	}).Name = "foobar"
-	e.GET("/users", func(c echo.Context) error {
-		obs.Logger.Info("incoming request to to list al; users")
-		users := &[]User{}
-		db.Find(&users)
-		return c.JSON(http.StatusOK, users)
-	})
-
-	// Start the server.
-	port := os.Getenv("PORT")
-	obs.Logger.WithField("port", port).Info("server running")
-	err := e.Start(":" + port)
-
-	if err != nil {
-		obs.Logger.Warn(err)
-	}
-
-	<-connectionsClosed // Wait for the graceful shutdown to finish.
-}
-
-func startFiberRoutes(obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
-	e := fiber.New()
 
 	// Set up a routes and handlers.
 	e.Post("/users", func(c *fiber.Ctx) {
@@ -178,9 +110,8 @@ func startFiberRoutes(obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
 		c.JSON(users)
 		c.SendStatus(http.StatusOK)
 	})
-
-	// Start the server.
-	port := os.Getenv("PORT")
-	// obs.Logger.WithField("port", port).Info("server running")
-	e.Listen(":" + port)
+	e.Get("/hello-world", func(c *fiber.Ctx) {
+		c.SendString("Hello World")
+	})
+	e.Listen(addr)
 }

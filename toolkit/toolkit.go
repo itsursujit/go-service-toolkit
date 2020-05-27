@@ -9,7 +9,6 @@ import (
 	"toolkit/server"
 
 	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo/v4"
 )
 
 // MustLoadEnvs checks and loads environment variables from the given folder.
@@ -61,15 +60,6 @@ func MustEnsureDBMigrations(folderPath string, config DBConfig) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-// MustNewServer sets up a new Echo server.
-func MustNewEchoServer(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo, chan struct{}) {
-	echoServer, connectionsClosed, err := server.NewEcho(obs, CORSOrigins, timeout...)
-	if err != nil {
-		panic(err)
-	}
-	return echoServer, connectionsClosed
 }
 
 // MustNewServer sets up a new Echo server.
