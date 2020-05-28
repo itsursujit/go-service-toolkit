@@ -77,8 +77,8 @@ func SetupGORM(config Config, logger observance.Logger) (*gorm.DB, error) {
 
 	// This setting addresses "invalid connection" errors in case of connections being closed by the DB server after the wait_timeout (8h).
 	// See https://github.com/go-sql-driver/mysql/issues/657.
-	db.DB().SetMaxOpenConns(250)
-	db.DB().SetMaxIdleConns(250)
+	db.DB().SetMaxOpenConns(100)
+	db.DB().SetMaxIdleConns(100)
 	db.DB().SetConnMaxLifetime(5 * time.Minute)
 	return db, nil
 }

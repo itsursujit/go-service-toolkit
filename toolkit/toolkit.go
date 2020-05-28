@@ -1,6 +1,7 @@
 package toolkit
 
 import (
+	"github.com/gofiber/fiber"
 	"toolkit/cache"
 	"toolkit/database"
 	"toolkit/envloader"
@@ -8,7 +9,6 @@ import (
 	"toolkit/server"
 
 	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo/v4"
 )
 
 // MustLoadEnvs checks and loads environment variables from the given folder.
@@ -63,10 +63,10 @@ func MustEnsureDBMigrations(folderPath string, config DBConfig) {
 }
 
 // MustNewServer sets up a new Echo server.
-func MustNewServer(obs *observance.Obs, CORSOrigins string, timeout ...string) (*echo.Echo, chan struct{}) {
-	echoServer, connectionsClosed, err := server.New(obs, CORSOrigins, timeout...)
+func MustNewFiberServer(obs *observance.Obs) (*fiber.App, chan struct{}) {
+	echoServer, err := server.NewFiber(obs)
 	if err != nil {
 		panic(err)
 	}
-	return echoServer, connectionsClosed
+	return echoServer, nil
 }
