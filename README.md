@@ -2,7 +2,7 @@
 
 The service toolkit bundles configuration manangement, setting up logging, ORM, REDIS cache and configuring the web framework. It uses opinionated (default) settings to reduce the amount of boilerplate code needed for these tasks. With the toolkit a new Go mircoservice can be set up very quickly.
 
-See [main.go in the example folder](https://github.com/fastbill/go-service-toolkit/blob/master/example/main.go) for a full, working example.
+See [main.go in the example folder](https://github.com/fastbill/go-service-toolkit/app/blob/master/example/main.go) for a full, working example.
 
 # Configuration and Environment Variables
 Following the [12-Factor App Guideline](https://12factor.net/config) our service retrieves its configuration from the environment variables. To avoid having to pass a lot of variables that change rarely or never, we keep most values in `.env` files that are then loaded
@@ -13,7 +13,7 @@ You need to tell the envloader in which folder to look for the `.env` files. By 
 ## Usage
 ```go
 import (
-	toolkit "toolkit/toolkit"
+	toolkit "toolkit/app/toolkit"
 )
 
 
@@ -35,7 +35,7 @@ The `Obs` struct has a `PanicRecover` method that can be used as deferred functi
 import (
 	"time"
 
-	"toolkit/toolkit"
+	"toolkit/app/toolkit"
 )
 
 func main() {
@@ -70,7 +70,7 @@ func SetupCustomContext(obs *observance.Observance) echo.MiddlewareFunc {
 }
 ```
 
-For testing there is a test logger provided. See the example [here](https://godoc.org/github.com/fastbill/go-service-toolkit/observance#example-NewTestLogger) to find out how to use it.
+For testing there is a test logger provided. See the example [here](https://godoc.org/github.com/fastbill/go-service-toolkit/app/observance#example-NewTestLogger) to find out how to use it.
 
 TODO: Add metrics usage example
 
@@ -86,7 +86,7 @@ Additionally `MustEnsureDBMigrations` runs all migrations from the given folder 
 ## Usage
 ```go
 import (
-    "toolkit/toolkit"
+    "toolkit/app/toolkit"
 )
 
 func main() {
@@ -115,7 +115,7 @@ The function `MustNewCache` sets up a new REDIS client. A prefix can be provided
 ## Usage
 ```go
 import (
-    "toolkit/toolkit"
+    "toolkit/app/toolkit"
 )
 
 func main() {
@@ -134,7 +134,7 @@ The server package sets up an [Echo](https://echo.labstack.com/) server that inc
 ## Usage
 ```go
 import (
-    "toolkit/server"
+    "toolkit/app/server"
 )
 
 func main() {
@@ -222,7 +222,7 @@ As response, the `CallHandler` method returns the error that the echo handler re
 ```go
 import (
 	"testing"
-    "toolkit/handlertest"
+    "toolkit/app/handlertest"
 )
 
 func TestMyHandler(t *testing.T) {
@@ -239,7 +239,7 @@ import (
 	"testing"
 	"time"
 
-	"toolkit/handlertest"
+	"toolkit/app/handlertest"
 	"github.com/labstack/echo/v4"
 )
 

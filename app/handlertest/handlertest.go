@@ -16,8 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"toolkit/toolkit"
-	"toolkit/observance"
+	"toolkit/app/toolkit"
+	"toolkit/app/observance"
 )
 
 // Suite holds the general properties to run handler tests.

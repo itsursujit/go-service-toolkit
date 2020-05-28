@@ -2,11 +2,11 @@ package toolkit
 
 import (
 	"github.com/gofiber/fiber"
-	"toolkit/cache"
-	"toolkit/database"
-	"toolkit/envloader"
-	"toolkit/observance"
-	"toolkit/server"
+	"toolkit/app/cache"
+	"toolkit/app/database"
+	"toolkit/app/envloader"
+	"toolkit/app/observance"
+	"toolkit/app/server"
 
 	"github.com/jinzhu/gorm"
 )

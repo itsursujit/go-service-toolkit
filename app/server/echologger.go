@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"toolkit/observance"
+	"toolkit/app/observance"
 	"github.com/labstack/gommon/log"
 )
 

@@ -409,8 +409,8 @@ var opts = {};
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/sujit/Sites/labs/go/go-service-toolkit/resources/assets/js/app.js */"./resources/assets/js/app.js");
-module.exports = __webpack_require__(/*! /home/sujit/Sites/labs/go/go-service-toolkit/resources/assets/sass/app.scss */"./resources/assets/sass/app.scss");
+__webpack_require__(/*! /home/sujit/Sites/labs/go/go-service-toolkit/app/resources/assets/js/app.js */"./resources/assets/js/app.js");
+module.exports = __webpack_require__(/*! /home/sujit/Sites/labs/go/go-service-toolkit/app/resources/assets/sass/app.scss */"./resources/assets/sass/app.scss");
 
 
 /***/ })
