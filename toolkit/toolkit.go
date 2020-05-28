@@ -63,8 +63,8 @@ func MustEnsureDBMigrations(folderPath string, config DBConfig) {
 }
 
 // MustNewServer sets up a new Echo server.
-func MustNewFiberServer(obs *observance.Obs, CORSOrigins string, timeout ...string) (*fiber.App, chan struct{}) {
-	echoServer, err := server.NewFiber(obs, CORSOrigins, timeout...)
+func MustNewFiberServer(obs *observance.Obs) (*fiber.App, chan struct{}) {
+	echoServer, err := server.NewFiber(obs)
 	if err != nil {
 		panic(err)
 	}

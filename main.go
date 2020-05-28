@@ -3,16 +3,12 @@ package main
 import (
 	"github.com/gofiber/fiber"
 	"github.com/jinzhu/gorm"
-	"html/template"
-	"io"
 	"net/http"
 	"os"
 	"time"
 	"toolkit/cache"
 	"toolkit/observance"
 	"toolkit/toolkit"
-
-	"github.com/labstack/echo/v4"
 )
 
 // User holds all basic user information.
@@ -21,7 +17,6 @@ type User struct {
 	Name string `json:"name" validate:"required"`
 	Age  uint64 `json:"age" validate:"gte=18"`
 }
-type Users []User
 
 func main() {
 	// Load environment variables.
@@ -60,26 +55,22 @@ func main() {
 
 	toolkit.MustEnsureDBMigrations("migrations", dbConfig)
 
-	// Set up REDIS cache.
-	cache := toolkit.MustNewCache(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"), "testPrefix")
+	// Set up REDIS newCache.
+	newCache := toolkit.MustNewCache(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"), "testPrefix")
 	defer func() {
-		if err := cache.Close(); err != nil {
+		if err := newCache.Close(); err != nil {
 			obs.Logger.WithError(err).Error("failed to close REDIS connection")
 		}
 	}()
 
 	// Set up the server.
 	addr := ":" + os.Getenv("PORT")
-	startFiberRoutes(addr, obs, db, cache)
+	startFiberRoutes(addr, obs, db, newCache)
 
 }
 
 func startFiberRoutes(addr string, obs *observance.Obs, db *gorm.DB, cache cache.Cache) {
-	e := fiber.New(&fiber.Settings{
-		Prefork:       true,
-		CaseSensitive: true,
-		StrictRouting: true,
-	})
+	e, _ := toolkit.MustNewFiberServer(obs)
 
 	// Set up a routes and handlers.
 	e.Post("/users", func(c *fiber.Ctx) {
@@ -88,17 +79,17 @@ func startFiberRoutes(addr string, obs *observance.Obs, db *gorm.DB, cache cache
 		newUser := &User{}
 		err := c.Locals("newUser", newUser)
 		if err != nil {
-			c.JSON(map[string]string{"msg": err.(string)})
+			_ = c.JSON(map[string]string{"msg": err.(string)})
 		}
 
 		if err = db.Save(newUser).Error; err != nil {
-			c.JSON(map[string]string{"msg": err.(string)})
+			_ = c.JSON(map[string]string{"msg": err.(string)})
 		}
 
 		// Nonsense cache usage example
 		err = cache.SetJSON("latestNewUser", newUser, 0)
 		if err != nil {
-			c.JSON(map[string]string{"msg": err.(string)})
+			_ = c.JSON(map[string]string{"msg": err.(string)})
 		}
 
 		c.SendStatus(http.StatusCreated)
@@ -107,11 +98,11 @@ func startFiberRoutes(addr string, obs *observance.Obs, db *gorm.DB, cache cache
 		obs.Logger.Info("incoming request to to list al; users")
 		users := &[]User{}
 		db.Find(&users)
-		c.JSON(users)
+		_ = c.JSON(users)
 		c.SendStatus(http.StatusOK)
 	})
-	e.Get("/hello-world", func(c *fiber.Ctx) {
-		c.SendString("Hello World")
+	e.Get("/", func(c *fiber.Ctx) {
+		_ = c.Render("index", fiber.Map{})
 	})
-	e.Listen(addr)
+	_ = e.Listen(addr)
 }
