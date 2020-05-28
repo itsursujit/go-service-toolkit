@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"toolkit/app/cache"
-	"toolkit/app/observance"
-	"toolkit/app/toolkit"
+	"toolkit/app/core/cache"
+	"toolkit/app/core/observance"
+	"toolkit/app/core/toolkit"
 )
 
 // User holds all basic user information.

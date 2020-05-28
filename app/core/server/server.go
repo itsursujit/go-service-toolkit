@@ -13,7 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	"toolkit/app/observance"
+	"toolkit/app/core/observance"
 )
 
 const defaultTimeout = 30 * time.Second
